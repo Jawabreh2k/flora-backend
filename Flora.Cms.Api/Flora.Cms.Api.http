@@ -1,0 +1,45 @@
+@host = https://localhost:7001
+
+### 1. Public site fetches the live theme (anonymous)
+GET {{host}}/api/ui/config
+Accept: application/json
+
+### 2. Admin logs in to obtain a JWT
+# @name login
+POST {{host}}/api/auth/login
+Content-Type: application/json
+
+{
+  "username": "admin",
+  "password": "ChangeMe!2026"
+}
+
+### 3. Admin reads the config for editing (JWT-protected)
+GET {{host}}/api/admin/ui/config
+Authorization: Bearer {{login.response.body.accessToken}}
+
+### 4. Admin updates the theme (JWT-protected)
+PUT {{host}}/api/admin/ui/config
+Authorization: Bearer {{login.response.body.accessToken}}
+Content-Type: application/json
+
+{
+  "theme": {
+    "primary": "#5a1020",
+    "accent": "#d4af37",
+    "gold": "#d4af37",
+    "maroon": "#5a1020",
+    "radius": "0.75rem"
+  },
+  "branding": {
+    "siteTitle": "Flora Group W.L.L.",
+    "metaDescription": "A trusted Qatari conglomerate since 1993.",
+    "logoUrl": "/images/flora-group-logo.png",
+    "themeColor": "#5A1020"
+  },
+  "sections": {
+    "showStats": true,
+    "showSubsidiaries": true,
+    "showSpotlight": true
+  }
+}
