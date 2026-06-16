@@ -18,18 +18,40 @@ Step 1 of the 3-part dynamic UI ecosystem:
 | **Concurrency** | `rowversion` optimistic-concurrency token + monotonic `Revision` (also the ETag). |
 | **Defaults** | Seeded brand tokens mirror the real `app/globals.css` (maroon `#4A0E17`, gold `#C5A880`). |
 
-## Project layout
+## Architecture
+
+The backend is a **modular monolith** built with **Clean Architecture** and **CQRS**.
+Dependencies point inward only (`Api → Infrastructure → Application → Domain`); the
+Domain has no dependencies at all.
 
 ```
-Flora.Cms.Api/
-├── Domain/         # Entities: UiConfiguration (JSON payload), AdminUser
-├── Data/           # DbContext, EF configurations, migrations, seeder
-├── Dtos/           # UiConfigPayload (Theme/Branding/Sections), Auth DTOs
-├── Services/       # UiConfigService, AuthService, JwtTokenService
-├── Auth/           # JwtOptions
-├── Controllers/    # Public + Admin config controllers, Auth controller
-└── Program.cs      # DI, EF, JWT, CORS, Swagger, migrate+seed on startup
+Flora.Cms.Domain/              # Entities + enums. No framework dependencies.
+Flora.Cms.Application/         # CQRS commands/queries/handlers, ports, validators.
+├── Abstractions/              #   ISender + ICommand/IQuery + handlers, IPipelineBehavior;
+│                              #   ports: IAppDbContext, ITokenService, IPasswordHasher,
+│                              #   IFileStorage, IDateTimeProvider, ICurrentUser.
+├── Common/                    #   Pipeline behaviors (validation, logging), exceptions, models.
+└── Features/                  #   Vertical slices: Auth, Jobs, Applications, UiConfig.
+Flora.Cms.Infrastructure/      # EF Core DbContext (impl. IAppDbContext), configs,
+│                              #   migrations, seeder, JWT/BCrypt/file-storage/clock adapters.
+└── DependencyInjection.cs     #   AddInfrastructure()
+Flora.Cms.Api/                 # Thin controllers (delegate to ISender), exception-handling
+│                              #   middleware, CurrentUser adapter, JWT/CORS/rate-limit wiring.
+└── Program.cs                 #   AddApplication() + AddInfrastructure(); migrate+seed on startup.
+Flora.Cms.Application.Tests/   # Unit tests (ContentMerger).
 ```
+
+### CQRS pipeline
+
+`ISender` is a small in-process dispatcher (no MediatR dependency). Each request is an
+`ICommand<T>` or `IQuery<T>` handled by exactly one `ICommandHandler`/`IQueryHandler`.
+Every request flows through ordered `IPipelineBehavior`s — **logging** then
+**FluentValidation** — before reaching its handler. Handlers throw intent-revealing
+exceptions (`ValidationException`, `NotFoundException`, `ConflictException`) that the
+API's exception-handling middleware maps to RFC-7807 problem responses (400 / 404 / 409).
+
+> The public HTTP contract (routes, request/response shapes, status codes, ETag/304
+> caching, JSON casing, enum-as-string) is unchanged from the previous version.
 
 ## Configuration
 

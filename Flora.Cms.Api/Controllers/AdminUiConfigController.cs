@@ -1,10 +1,10 @@
-using System.Security.Claims;
-using Flora.Cms.Api.Domain;
-using Flora.Cms.Api.Dtos;
-using Flora.Cms.Api.Services;
+using Flora.Cms.Application.Abstractions.Messaging;
+using Flora.Cms.Application.Features.UiConfig.Commands;
+using Flora.Cms.Application.Features.UiConfig.Contracts;
+using Flora.Cms.Application.Features.UiConfig.Queries;
+using Flora.Cms.Domain.Common;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using System.Collections.Generic;
 
 namespace Flora.Cms.Api.Controllers;
 
@@ -16,19 +16,19 @@ namespace Flora.Cms.Api.Controllers;
 [Route("api/admin/ui/config")]
 [Authorize(Roles = Roles.Admin)]
 [Produces("application/json")]
-public class AdminUiConfigController(IUiConfigService configService) : ControllerBase
+public class AdminUiConfigController(ISender sender) : ControllerBase
 {
     /// <summary>Returns the current configuration for editing in the portal.</summary>
     [HttpGet]
     [ProducesResponseType(typeof(UiConfigResponse), StatusCodes.Status200OK)]
     public async Task<ActionResult<UiConfigResponse>> Get(CancellationToken ct)
-        => Ok(await configService.GetAsync(ct));
+        => Ok(await sender.Send(new GetUiConfigQuery(), ct));
 
     /// <summary>Returns the last 10 revision snapshots, newest first.</summary>
     [HttpGet("history")]
     [ProducesResponseType(typeof(IReadOnlyList<RevisionSummary>), StatusCodes.Status200OK)]
     public async Task<ActionResult<IReadOnlyList<RevisionSummary>>> GetHistory(CancellationToken ct)
-        => Ok(await configService.GetHistoryAsync(ct: ct));
+        => Ok(await sender.Send(new GetUiConfigHistoryQuery(), ct));
 
     /// <summary>Replaces the live UI configuration payload.</summary>
     [HttpPut]
@@ -39,12 +39,5 @@ public class AdminUiConfigController(IUiConfigService configService) : Controlle
     public async Task<ActionResult<UiConfigResponse>> Update(
         [FromBody] UiConfigPayload payload,
         CancellationToken ct)
-    {
-        var updatedBy = User.Identity?.Name
-                        ?? User.FindFirstValue(ClaimTypes.NameIdentifier)
-                        ?? "unknown";
-
-        var result = await configService.UpdateAsync(payload, updatedBy, ct);
-        return Ok(result);
-    }
+        => Ok(await sender.Send(new UpdateUiConfigCommand(payload), ct));
 }

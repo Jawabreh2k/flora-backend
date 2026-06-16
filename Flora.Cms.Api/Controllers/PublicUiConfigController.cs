@@ -1,5 +1,6 @@
-using Flora.Cms.Api.Dtos;
-using Flora.Cms.Api.Services;
+using Flora.Cms.Application.Abstractions.Messaging;
+using Flora.Cms.Application.Features.UiConfig.Contracts;
+using Flora.Cms.Application.Features.UiConfig.Queries;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Net.Http.Headers;
@@ -15,7 +16,7 @@ namespace Flora.Cms.Api.Controllers;
 [Route("api/ui/config")]
 [AllowAnonymous]
 [Produces("application/json")]
-public class PublicUiConfigController(IUiConfigService configService) : ControllerBase
+public class PublicUiConfigController(ISender sender) : ControllerBase
 {
     /// <summary>Returns the live UI configuration. Supports ETag / If-None-Match caching.</summary>
     [HttpGet]
@@ -23,7 +24,7 @@ public class PublicUiConfigController(IUiConfigService configService) : Controll
     [ProducesResponseType(StatusCodes.Status304NotModified)]
     public async Task<IActionResult> Get(CancellationToken ct)
     {
-        var config = await configService.GetAsync(ct);
+        var config = await sender.Send(new GetUiConfigQuery(), ct);
 
         // Revision-based ETag lets the public site (and CDNs) cache aggressively while
         // still picking up admin changes immediately.

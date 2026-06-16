@@ -1,0 +1,16 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net9.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <RootNamespace>Flora.Cms.Domain</RootNamespace>
+  </PropertyGroup>
+
+  <!--
+    The Domain layer is the innermost ring of the architecture. It models the
+    business and intentionally has NO dependency on any other project or
+    infrastructure package (EF Core, ASP.NET, etc.).
+  -->
+
+</Project>

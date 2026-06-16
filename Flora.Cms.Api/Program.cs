@@ -1,38 +1,34 @@
 using System.Text;
 using System.Text.Json.Serialization;
 using System.Threading.RateLimiting;
-using Flora.Cms.Api.Auth;
-using Flora.Cms.Api.Data;
-using Flora.Cms.Api.Services;
+using Flora.Cms.Api.Middleware;
+using Flora.Cms.Api.Security;
+using Flora.Cms.Application;
+using Flora.Cms.Application.Abstractions.Security;
+using Flora.Cms.Infrastructure;
+using Flora.Cms.Infrastructure.Persistence;
+using Flora.Cms.Infrastructure.Security;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.RateLimiting;
-using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// ---------------------------------------------------------------------------
-// Configuration sections
-// ---------------------------------------------------------------------------
 const string CorsPolicy = "FloraClients";
 
-builder.Services
-    .AddOptions<JwtOptions>()
-    .Bind(builder.Configuration.GetSection(JwtOptions.SectionName))
-    .ValidateDataAnnotations()
-    .ValidateOnStart();
+// ---------------------------------------------------------------------------
+// Application + Infrastructure (Clean Architecture composition roots)
+// ---------------------------------------------------------------------------
+builder.Services.AddApplication();
+builder.Services.AddInfrastructure(builder.Configuration);
+
+// Resolve the calling admin for write auditing (UI config updates).
+builder.Services.AddHttpContextAccessor();
+builder.Services.AddScoped<ICurrentUser, CurrentUser>();
 
 var jwt = builder.Configuration.GetSection(JwtOptions.SectionName).Get<JwtOptions>()
           ?? throw new InvalidOperationException("Missing 'Jwt' configuration section.");
-
-// ---------------------------------------------------------------------------
-// Persistence (EF Core + SQL Server)
-// ---------------------------------------------------------------------------
-builder.Services.AddDbContext<FloraCmsDbContext>(options =>
-    options.UseSqlServer(
-        builder.Configuration.GetConnectionString("Default"),
-        sql => sql.MigrationsAssembly(typeof(FloraCmsDbContext).Assembly.FullName)));
 
 // ---------------------------------------------------------------------------
 // Rate limiting — 5 login attempts per minute per IP
@@ -47,22 +43,14 @@ builder.Services.AddRateLimiter(o =>
         opts.QueueProcessingOrder = QueueProcessingOrder.OldestFirst;
         opts.QueueLimit = 0;
     });
+    o.AddFixedWindowLimiter("contact", opts =>
+    {
+        opts.PermitLimit = 10;
+        opts.Window = TimeSpan.FromMinutes(1);
+        opts.QueueProcessingOrder = QueueProcessingOrder.OldestFirst;
+        opts.QueueLimit = 0;
+    });
 });
-
-// ---------------------------------------------------------------------------
-// Application services
-// ---------------------------------------------------------------------------
-builder.Services.AddScoped<IUiConfigService, UiConfigService>();
-builder.Services.AddScoped<IAuthService, AuthService>();
-builder.Services.AddScoped<IJobService, JobService>();
-builder.Services.AddScoped<IApplicationService, ApplicationService>();
-builder.Services.AddSingleton<ITokenService, JwtTokenService>();
-
-var useS3 = builder.Configuration.GetValue<bool>("Storage:UseS3");
-if (useS3)
-    builder.Services.AddScoped<IFileStorageService, S3FileStorageService>();
-else
-    builder.Services.AddScoped<IFileStorageService, LocalFileStorageService>();
 
 // ---------------------------------------------------------------------------
 // AuthN / AuthZ (JWT bearer)
@@ -134,6 +122,9 @@ var app = builder.Build();
 // ---------------------------------------------------------------------------
 // Pipeline
 // ---------------------------------------------------------------------------
+// Translate application exceptions into problem responses for everything downstream.
+app.UseMiddleware<ExceptionHandlingMiddleware>();
+
 if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();
