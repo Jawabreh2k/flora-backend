@@ -52,10 +52,12 @@ public static class DependencyInjection
         else
             services.AddScoped<IFileStorage, LocalFileStorageService>();
 
-        if (!string.IsNullOrWhiteSpace(config[$"{ContactOptions.SectionName}:ResendApiKey"]))
-            services.AddScoped<IEmailSender, ResendEmailSender>();
-        else
-            services.AddScoped<IEmailSender, SmtpEmailSender>();
+        // Email delivery is now admin-configurable at runtime: the sender resolves the
+        // saved settings (merged over appsettings) on each send and dispatches to the
+        // selected provider. Secrets are encrypted at rest via Data Protection.
+        services.AddScoped<IEmailSecretProtector, DataProtectionEmailSecretProtector>();
+        services.AddScoped<IEmailSettingsProvider, EmailSettingsProvider>();
+        services.AddScoped<IEmailSender, ConfigurableEmailSender>();
 
         return services;
     }

@@ -35,6 +35,14 @@ public sealed class ContactRecipientResolver(
     }
 
     public static string? TryReadFromPayload(string payloadJson, string locale)
+        => TryReadEmailFromPayload(payloadJson, locale, "contact", "formRecipientEmail");
+
+    /// <summary>
+    /// Reads <c>content.{locale}.{group}.{key}</c> from the CMS payload, trying the
+    /// requested locale then en/ar. Returns null when absent or corrupted. Shared by the
+    /// contact and careers recipient resolvers.
+    /// </summary>
+    public static string? TryReadEmailFromPayload(string payloadJson, string locale, string group, string key)
     {
         try
         {
@@ -53,13 +61,13 @@ public sealed class ContactRecipientResolver(
                     continue;
                 }
 
-                if (!localeEl.TryGetProperty("contact", out var contact) ||
-                    contact.ValueKind is not JsonValueKind.Object)
+                if (!localeEl.TryGetProperty(group, out var groupEl) ||
+                    groupEl.ValueKind is not JsonValueKind.Object)
                 {
                     continue;
                 }
 
-                if (!contact.TryGetProperty("formRecipientEmail", out var emailProp))
+                if (!groupEl.TryGetProperty(key, out var emailProp))
                 {
                     continue;
                 }

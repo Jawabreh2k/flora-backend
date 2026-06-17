@@ -23,6 +23,11 @@ const string CorsPolicy = "FloraClients";
 builder.Services.AddApplication();
 builder.Services.AddInfrastructure(builder.Configuration);
 
+// Key ring for encrypting email secrets at rest (Data Protection). Keys persist to the
+// machine key store by default; for containerized/multi-instance prod, persist them to a
+// shared location (file share, blob, or DB) so saved secrets remain decryptable.
+builder.Services.AddDataProtection();
+
 // Resolve the calling admin for write auditing (UI config updates).
 builder.Services.AddHttpContextAccessor();
 builder.Services.AddScoped<ICurrentUser, CurrentUser>();

@@ -16,6 +16,8 @@ public class ContactInquiryConfig : IEntityTypeConfiguration<ContactInquiry>
         b.Property(x => x.Subject).HasMaxLength(512).IsRequired();
         b.Property(x => x.Message).HasMaxLength(8000).IsRequired();
         b.Property(x => x.Locale).HasMaxLength(8).IsRequired();
+        b.Property(x => x.Status).HasConversion<string>().HasMaxLength(16).IsRequired();
         b.HasIndex(x => x.CreatedAtUtc);
+        b.HasIndex(x => x.Status);
     }
 }

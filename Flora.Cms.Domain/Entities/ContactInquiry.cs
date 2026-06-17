@@ -1,3 +1,5 @@
+using Flora.Cms.Domain.Enums;
+
 namespace Flora.Cms.Domain.Entities;
 
 public class ContactInquiry
@@ -15,6 +17,9 @@ public class ContactInquiry
     public required string Message { get; set; }
 
     public string Locale { get; set; } = "en";
+
+    /// <summary>Inbox triage state. New on arrival; admins mark it read or archived.</summary>
+    public ContactInquiryStatus Status { get; set; } = ContactInquiryStatus.NEW;
 
     public DateTimeOffset CreatedAtUtc { get; set; } = DateTimeOffset.UtcNow;
 }

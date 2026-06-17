@@ -1,4 +1,6 @@
 using FluentValidation;
+using Flora.Cms.Application.Abstractions.Careers;
+using Flora.Cms.Application.Abstractions.Email;
 using Flora.Cms.Application.Abstractions.Messaging;
 using Flora.Cms.Application.Abstractions.Persistence;
 using Flora.Cms.Application.Abstractions.Storage;
@@ -7,7 +9,9 @@ using Flora.Cms.Application.Features.Applications.Contracts;
 using Flora.Cms.Application.Features.Applications.Mapping;
 using Flora.Cms.Domain.Enums;
 using ApplicationEntity = Flora.Cms.Domain.Entities.Application;
+using JobPostingEntity = Flora.Cms.Domain.Entities.JobPosting;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
 using ValidationException = Flora.Cms.Application.Common.Exceptions.ValidationException;
 using NotFoundException = Flora.Cms.Application.Common.Exceptions.NotFoundException;
 
@@ -54,7 +58,10 @@ public sealed class SubmitApplicationCommandValidator : AbstractValidator<Submit
 public sealed class SubmitApplicationCommandHandler(
     IAppDbContext db,
     IFileStorage fileStorage,
-    IDateTimeProvider clock)
+    IDateTimeProvider clock,
+    ICareersRecipientResolver recipientResolver,
+    IEmailSender emailSender,
+    ILogger<SubmitApplicationCommandHandler> logger)
     : ICommandHandler<SubmitApplicationCommand, ApplicationDto>
 {
     public async Task<ApplicationDto> Handle(SubmitApplicationCommand command, CancellationToken ct)
@@ -86,6 +93,51 @@ public sealed class SubmitApplicationCommandHandler(
         db.Applications.Add(application);
         await db.SaveChangesAsync(ct);
 
+        await NotifyHrAsync(application, job, ct);
+
         return ApplicationMappings.ToDto(application);
+    }
+
+    /// <summary>
+    /// Emails HR that a new application arrived. Best-effort: the candidate's submission
+    /// has already been persisted, so a delivery failure is logged but never surfaced.
+    /// </summary>
+    private async Task NotifyHrAsync(ApplicationEntity application, JobPostingEntity job, CancellationToken ct)
+    {
+        try
+        {
+            var recipient = await recipientResolver.ResolveAsync("en", ct);
+
+            static string Enc(string? value) => System.Net.WebUtility.HtmlEncode(value ?? "—");
+
+            var coverLetter = string.IsNullOrWhiteSpace(application.CoverLetter)
+                ? "<p><em>No cover letter provided.</em></p>"
+                : $"<p>{Enc(application.CoverLetter).Replace("\n", "<br/>")}</p>";
+
+            var html = $"""
+                <h2>New job application</h2>
+                <p><strong>Role:</strong> {Enc(job.Title)} — {Enc(job.Department)}</p>
+                <p><strong>Candidate:</strong> {Enc(application.CandidateName)}</p>
+                <p><strong>Email:</strong> {Enc(application.CandidateEmail)}</p>
+                <p><strong>Phone:</strong> {Enc(application.CandidatePhone)}</p>
+                <hr />
+                <p><strong>Cover letter</strong></p>
+                {coverLetter}
+                <p><strong>Résumé:</strong> {Enc(application.ResumeUrl)}</p>
+                <p style="color:#888;font-size:12px">Review and respond in the Flora admin portal.</p>
+                """;
+
+            await emailSender.SendAsync(
+                new EmailMessage(
+                    recipient,
+                    $"[Flora Careers] New application: {application.CandidateName} — {job.Title}",
+                    html,
+                    application.CandidateEmail),
+                ct);
+        }
+        catch (Exception ex)
+        {
+            logger.LogWarning(ex, "Failed to send application alert for application {ApplicationId}", application.Id);
+        }
     }
 }

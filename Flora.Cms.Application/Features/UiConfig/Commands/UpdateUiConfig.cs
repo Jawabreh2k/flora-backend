@@ -20,9 +20,6 @@ public sealed class UpdateUiConfigCommandHandler(
     ILogger<UpdateUiConfigCommandHandler> logger)
     : ICommandHandler<UpdateUiConfigCommand, UiConfigResponse>
 {
-    // Number of revision snapshots to retain per config row.
-    private const int MaxRevisionHistory = 10;
-
     public async Task<UiConfigResponse> Handle(UpdateUiConfigCommand command, CancellationToken ct)
     {
         var updatedBy = currentUser.UserName ?? "unknown";
@@ -32,14 +29,7 @@ public sealed class UpdateUiConfigCommandHandler(
             ?? await UiConfigMapper.CreateDefaultAsync(db, ct);
 
         // Archive the current state before overwriting.
-        db.UiConfigRevisions.Add(new UiConfigRevision
-        {
-            ConfigId = entity.Id,
-            Revision = entity.Revision,
-            PayloadJson = entity.PayloadJson,
-            SavedAtUtc = entity.UpdatedAtUtc,
-            SavedBy = entity.UpdatedBy,
-        });
+        UiConfigMapper.ArchiveCurrent(db, entity);
 
         var payload = command.Payload;
 
@@ -53,15 +43,7 @@ public sealed class UpdateUiConfigCommandHandler(
         entity.UpdatedAtUtc = clock.UtcNow;
         entity.UpdatedBy = updatedBy;
 
-        // Prune old snapshots, keeping only the most recent MaxRevisionHistory entries.
-        var oldRevisions = await db.UiConfigRevisions
-            .Where(r => r.ConfigId == UiConfiguration.SingletonId)
-            .OrderByDescending(r => r.Revision)
-            .Skip(MaxRevisionHistory)
-            .ToListAsync(ct);
-
-        if (oldRevisions.Count > 0)
-            db.UiConfigRevisions.RemoveRange(oldRevisions);
+        await UiConfigMapper.PruneRevisionsAsync(db, ct);
 
         await db.SaveChangesAsync(ct);
         logger.LogInformation("UI config updated to revision {Revision} by {User}", entity.Revision, updatedBy);

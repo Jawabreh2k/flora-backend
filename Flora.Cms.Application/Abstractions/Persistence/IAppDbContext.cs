@@ -20,6 +20,7 @@ public interface IAppDbContext
     DbSet<JobPosting> JobPostings { get; }
     DbSet<ApplicationEntity> Applications { get; }
     DbSet<ContactInquiry> ContactInquiries { get; }
+    DbSet<EmailSettings> EmailSettings { get; }
 
     Task<int> SaveChangesAsync(CancellationToken ct = default);
 }

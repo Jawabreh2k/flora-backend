@@ -1,8 +1,10 @@
 using System.Reflection;
 using FluentValidation;
+using Flora.Cms.Application.Abstractions.Careers;
 using Flora.Cms.Application.Abstractions.Contact;
 using Flora.Cms.Application.Abstractions.Messaging;
 using Flora.Cms.Application.Common.Behaviors;
+using Flora.Cms.Application.Features.Applications;
 using Flora.Cms.Application.Features.Contact;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -17,6 +19,7 @@ public static class DependencyInjection
 
         services.AddScoped<ISender, Sender>();
         services.AddScoped<IContactRecipientResolver, ContactRecipientResolver>();
+        services.AddScoped<ICareersRecipientResolver, CareersRecipientResolver>();
 
         RegisterHandlers(services, assembly);
 

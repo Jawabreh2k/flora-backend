@@ -27,6 +27,21 @@ public sealed record UpdateJobStatusRequest(JobStatus Status);
 
 public sealed record UpdateApplicationStatusRequest(ApplicationStatus Status);
 
+public sealed record UpdateContactInquiryStatusRequest(ContactInquiryStatus Status);
+
+/// <summary>Admin email delivery settings. Secret fields are leave-blank-to-keep.</summary>
+public sealed record UpdateEmailSettingsRequest(
+    EmailProvider Provider,
+    string FromAddress,
+    string? SmtpHost,
+    int SmtpPort,
+    bool SmtpUseSsl,
+    string? SmtpUser,
+    string? SmtpPassword,
+    string? ResendApiKey);
+
+public sealed record SendTestEmailRequest(string To = "");
+
 /// <summary>Multipart form fields for a candidate application (the resume arrives separately).</summary>
 public sealed class SubmitApplicationRequest
 {

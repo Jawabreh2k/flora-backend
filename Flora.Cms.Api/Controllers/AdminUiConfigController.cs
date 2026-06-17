@@ -30,6 +30,13 @@ public class AdminUiConfigController(ISender sender) : ControllerBase
     public async Task<ActionResult<IReadOnlyList<RevisionSummary>>> GetHistory(CancellationToken ct)
         => Ok(await sender.Send(new GetUiConfigHistoryQuery(), ct));
 
+    /// <summary>Rolls the live configuration back to a previous revision (published as a new one).</summary>
+    [HttpPost("history/{revision:int}/restore")]
+    [ProducesResponseType(typeof(UiConfigResponse), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    public async Task<ActionResult<UiConfigResponse>> Restore(int revision, CancellationToken ct)
+        => Ok(await sender.Send(new RestoreUiConfigRevisionCommand(revision), ct));
+
     /// <summary>Replaces the live UI configuration payload.</summary>
     [HttpPut]
     [ProducesResponseType(typeof(UiConfigResponse), StatusCodes.Status200OK)]
