@@ -177,6 +177,13 @@ public class ManagedSubsidiaryDto
     public bool HasProfile { get; set; } = false;
     public SubsidiaryContactDto Contact { get; set; } = new();
 
+    /// <summary>
+    /// Hides the subsidiary from the public site (homepage grid, footer, sitemap,
+    /// and its own /subsidiaries/{slug} page) without deleting its data. Defaults
+    /// to true so existing stored JSON without this field deserializes as visible.
+    /// </summary>
+    public bool Enabled { get; set; } = true;
+
     /// <summary>Returns all 6 default subsidiaries from hardcoded data.</summary>
     public static List<ManagedSubsidiaryDto> GetDefaults()
     {
