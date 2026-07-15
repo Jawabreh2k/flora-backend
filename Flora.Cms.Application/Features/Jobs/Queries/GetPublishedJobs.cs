@@ -1,5 +1,6 @@
 using Flora.Cms.Application.Abstractions.Messaging;
 using Flora.Cms.Application.Abstractions.Persistence;
+using Flora.Cms.Application.Abstractions.Time;
 using Flora.Cms.Application.Common.Models;
 using Flora.Cms.Application.Features.Jobs.Contracts;
 using Flora.Cms.Domain.Enums;
@@ -16,18 +17,23 @@ public sealed record GetPublishedJobsQuery(
     int Page = 1,
     int PageSize = 12) : IQuery<PaginatedResponse<JobListItemDto>>;
 
-public sealed class GetPublishedJobsQueryHandler(IAppDbContext db)
+public sealed class GetPublishedJobsQueryHandler(IAppDbContext db, IDateTimeProvider clock)
     : IQueryHandler<GetPublishedJobsQuery, PaginatedResponse<JobListItemDto>>
 {
     public async Task<PaginatedResponse<JobListItemDto>> Handle(GetPublishedJobsQuery query, CancellationToken ct)
     {
         var page = Math.Max(1, query.Page);
         var pageSize = Math.Clamp(query.PageSize, 1, 50);
+        var now = clock.UtcNow;
 
+        // Closed-but-still-PUBLISHED postings (ClosingDate passed) are excluded from
+        // the board — SubmitApplicationCommandHandler already rejects applications to
+        // them, so leaving them listed just walks candidates into a dead-end submit.
         var q = db.JobPostings
             .AsNoTracking()
             .Include(j => j.Company)
-            .Where(j => j.Status == JobStatus.PUBLISHED);
+            .Where(j => j.Status == JobStatus.PUBLISHED)
+            .Where(j => !j.ClosingDate.HasValue || j.ClosingDate.Value >= now);
 
         if (!string.IsNullOrWhiteSpace(query.Search))
         {
