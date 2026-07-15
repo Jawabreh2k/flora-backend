@@ -1,4 +1,5 @@
 using System.Text.RegularExpressions;
+using Flora.Cms.Api.Contracts;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
@@ -49,11 +50,12 @@ public partial class UploadController : ControllerBase
     [ProducesResponseType(typeof(UploadResponse), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status413PayloadTooLarge)]
-    public async Task<ActionResult<UploadResponse>> Upload(
-        [FromForm] IFormFile? file,
-        [FromForm] string? subsidiary,
-        [FromForm] string? field)
+    public async Task<ActionResult<UploadResponse>> Upload([FromForm] UploadRequest request)
     {
+        var file = request.File;
+        var subsidiary = request.Subsidiary;
+        var field = request.Field;
+
         // Validate inputs
         if (file == null || file.Length == 0)
             return BadRequest(new { error = "No file provided." });

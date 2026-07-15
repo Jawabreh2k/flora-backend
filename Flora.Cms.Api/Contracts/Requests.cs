@@ -1,4 +1,5 @@
 using Flora.Cms.Domain.Enums;
+using Microsoft.AspNetCore.Http;
 
 namespace Flora.Cms.Api.Contracts;
 
@@ -42,11 +43,28 @@ public sealed record UpdateEmailSettingsRequest(
 
 public sealed record SendTestEmailRequest(string To = "");
 
-/// <summary>Multipart form fields for a candidate application (the resume arrives separately).</summary>
+/// <summary>
+/// Multipart form fields for a candidate application, including the resume file.
+/// Kept as a single [FromForm] type — mixing a complex [FromForm] parameter with a
+/// separate loose IFormFile parameter on the same action breaks Swashbuckle's
+/// OpenAPI schema generation (throws when building the multipart/form-data body).
+/// </summary>
 public sealed class SubmitApplicationRequest
 {
     public string CandidateName { get; set; } = string.Empty;
     public string CandidateEmail { get; set; } = string.Empty;
     public string? CandidatePhone { get; set; }
     public string? CoverLetter { get; set; }
+    public IFormFile? Resume { get; set; }
+}
+
+/// <summary>
+/// Multipart form fields for an admin image upload. Kept as a single [FromForm]
+/// type for the same reason as SubmitApplicationRequest — see its doc comment.
+/// </summary>
+public sealed class UploadRequest
+{
+    public IFormFile? File { get; set; }
+    public string? Subsidiary { get; set; }
+    public string? Field { get; set; }
 }

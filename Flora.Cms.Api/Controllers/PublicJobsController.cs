@@ -56,9 +56,9 @@ public class PublicJobsController(ISender sender) : ControllerBase
     public async Task<ActionResult<ApplicationDto>> Apply(
         Guid id,
         [FromForm] SubmitApplicationRequest request,
-        IFormFile? resume,
         CancellationToken ct)
     {
+        var resume = request.Resume;
         var resumeError = ValidateResume(resume);
         if (resumeError is not null)
             return BadRequest(new ProblemDetails { Title = resumeError });
