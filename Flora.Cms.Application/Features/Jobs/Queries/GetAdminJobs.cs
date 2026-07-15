@@ -48,6 +48,7 @@ public sealed class GetAdminJobsQueryHandler(IAppDbContext db)
             .Select(j => new AdminJobListItemDto(
                 j.Id,
                 j.Title,
+                j.TitleAr,
                 j.Department,
                 j.Status,
                 j.LocationType,

@@ -13,9 +13,11 @@ public class JobPostingConfig : IEntityTypeConfiguration<JobPosting>
         b.HasKey(x => x.Id);
 
         b.Property(x => x.Title).HasMaxLength(256).IsRequired();
+        b.Property(x => x.TitleAr).HasMaxLength(256);
         b.Property(x => x.Department).HasMaxLength(128).IsRequired();
         b.Property(x => x.LocationText).HasMaxLength(256).IsRequired();
         b.Property(x => x.Description).IsRequired();
+        b.Property(x => x.DescriptionAr);
         b.Property(x => x.SalaryRange).HasMaxLength(128);
         b.Property(x => x.LocationType).HasConversion<string>().HasMaxLength(32);
         b.Property(x => x.JobType).HasConversion<string>().HasMaxLength(32);
@@ -25,7 +27,15 @@ public class JobPostingConfig : IEntityTypeConfiguration<JobPosting>
             .HasConversion(JsonStringListConverter.Instance)
             .Metadata.SetValueComparer(JsonStringListConverter.Comparer);
 
+        b.Property(x => x.RequirementsAr)
+            .HasConversion(JsonStringListConverter.Instance)
+            .Metadata.SetValueComparer(JsonStringListConverter.Comparer);
+
         b.Property(x => x.Responsibilities)
+            .HasConversion(JsonStringListConverter.Instance)
+            .Metadata.SetValueComparer(JsonStringListConverter.Comparer);
+
+        b.Property(x => x.ResponsibilitiesAr)
             .HasConversion(JsonStringListConverter.Instance)
             .Metadata.SetValueComparer(JsonStringListConverter.Comparer);
 

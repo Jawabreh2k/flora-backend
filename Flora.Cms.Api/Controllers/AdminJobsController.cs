@@ -87,13 +87,17 @@ public class AdminJobsController(ISender sender) : ControllerBase
     private static JobWriteModel ToWriteModel(UpsertJobRequest r) => new(
         r.CompanyId,
         r.Title,
+        r.TitleAr,
         r.Department,
         r.LocationType,
         r.LocationText,
         r.JobType,
         r.Description,
+        r.DescriptionAr,
         r.Requirements ?? [],
+        r.RequirementsAr ?? [],
         r.Responsibilities ?? [],
+        r.ResponsibilitiesAr ?? [],
         r.SalaryRange,
         r.Status,
         r.ClosingDate);

@@ -278,6 +278,9 @@ namespace Flora.Cms.Infrastructure.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
+                    b.Property<string>("DescriptionAr")
+                        .HasColumnType("nvarchar(max)");
+
                     b.Property<string>("JobType")
                         .IsRequired()
                         .HasMaxLength(32)
@@ -297,7 +300,15 @@ namespace Flora.Cms.Infrastructure.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
+                    b.Property<string>("RequirementsAr")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
                     b.Property<string>("Responsibilities")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("ResponsibilitiesAr")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
@@ -312,6 +323,10 @@ namespace Flora.Cms.Infrastructure.Migrations
 
                     b.Property<string>("Title")
                         .IsRequired()
+                        .HasMaxLength(256)
+                        .HasColumnType("nvarchar(256)");
+
+                    b.Property<string>("TitleAr")
                         .HasMaxLength(256)
                         .HasColumnType("nvarchar(256)");
 

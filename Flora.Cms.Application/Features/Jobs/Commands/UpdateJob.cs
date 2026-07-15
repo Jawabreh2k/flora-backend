@@ -42,13 +42,17 @@ public sealed class UpdateJobCommandHandler(IAppDbContext db, IDateTimeProvider 
 
         job.CompanyId = data.CompanyId;
         job.Title = data.Title.Trim();
+        job.TitleAr = string.IsNullOrWhiteSpace(data.TitleAr) ? null : data.TitleAr.Trim();
         job.Department = data.Department.Trim();
         job.LocationType = data.LocationType;
         job.LocationText = data.LocationText.Trim();
         job.JobType = data.JobType;
         job.Description = data.Description.Trim();
+        job.DescriptionAr = string.IsNullOrWhiteSpace(data.DescriptionAr) ? null : data.DescriptionAr.Trim();
         job.Requirements = JobInputSanitizer.Clean(data.Requirements);
+        job.RequirementsAr = JobInputSanitizer.Clean(data.RequirementsAr);
         job.Responsibilities = JobInputSanitizer.Clean(data.Responsibilities);
+        job.ResponsibilitiesAr = JobInputSanitizer.Clean(data.ResponsibilitiesAr);
         job.SalaryRange = data.SalaryRange?.Trim();
         job.Status = data.Status;
         job.ClosingDate = data.ClosingDate;

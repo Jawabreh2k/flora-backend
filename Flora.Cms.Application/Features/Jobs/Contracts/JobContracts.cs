@@ -20,6 +20,8 @@ public record CompanyDto(
 public record JobListItemDto(
     Guid Id,
     string Title,
+    /// <summary>Arabic translation of Title, when an editor has provided one.</summary>
+    string? TitleAr,
     string Department,
     LocationType LocationType,
     string LocationText,
@@ -32,13 +34,17 @@ public record JobListItemDto(
 public record JobDetailDto(
     Guid Id,
     string Title,
+    string? TitleAr,
     string Department,
     LocationType LocationType,
     string LocationText,
     JobType JobType,
     string Description,
+    string? DescriptionAr,
     IReadOnlyList<string> Requirements,
+    IReadOnlyList<string> RequirementsAr,
     IReadOnlyList<string> Responsibilities,
+    IReadOnlyList<string> ResponsibilitiesAr,
     string? SalaryRange,
     JobStatus Status,
     DateTimeOffset? ClosingDate,
@@ -49,6 +55,7 @@ public record JobDetailDto(
 public record AdminJobListItemDto(
     Guid Id,
     string Title,
+    string? TitleAr,
     string Department,
     JobStatus Status,
     LocationType LocationType,

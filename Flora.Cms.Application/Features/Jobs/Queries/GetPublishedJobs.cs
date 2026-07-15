@@ -62,6 +62,7 @@ public sealed class GetPublishedJobsQueryHandler(IAppDbContext db, IDateTimeProv
             .Select(j => new JobListItemDto(
                 j.Id,
                 j.Title,
+                j.TitleAr,
                 j.Department,
                 j.LocationType,
                 j.LocationText,

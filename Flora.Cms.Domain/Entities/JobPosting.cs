@@ -12,6 +12,9 @@ public class JobPosting
 
     public required string Title { get; set; }
 
+    /// <summary>Arabic translation of Title. Optional — the public site falls back to Title when unset.</summary>
+    public string? TitleAr { get; set; }
+
     public required string Department { get; set; }
 
     public LocationType LocationType { get; set; }
@@ -22,9 +25,18 @@ public class JobPosting
 
     public required string Description { get; set; }
 
+    /// <summary>Arabic translation of Description. Optional — the public site falls back to Description when unset.</summary>
+    public string? DescriptionAr { get; set; }
+
     public List<string> Requirements { get; set; } = [];
 
+    /// <summary>Arabic translation of Requirements. Optional — the public site falls back to Requirements when empty.</summary>
+    public List<string> RequirementsAr { get; set; } = [];
+
     public List<string> Responsibilities { get; set; } = [];
+
+    /// <summary>Arabic translation of Responsibilities. Optional — the public site falls back to Responsibilities when empty.</summary>
+    public List<string> ResponsibilitiesAr { get; set; } = [];
 
     public string? SalaryRange { get; set; }
 

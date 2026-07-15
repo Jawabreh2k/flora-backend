@@ -13,18 +13,24 @@ public sealed record LoginRequest(string Username = "", string Password = "");
 public sealed record UpsertJobRequest(
     Guid CompanyId,
     string Title,
+    string? TitleAr,
     string Department,
     LocationType LocationType,
     string LocationText,
     JobType JobType,
     string Description,
+    string? DescriptionAr,
     List<string>? Requirements,
+    List<string>? RequirementsAr,
     List<string>? Responsibilities,
+    List<string>? ResponsibilitiesAr,
     string? SalaryRange,
     JobStatus Status,
     DateTimeOffset? ClosingDate);
 
 public sealed record UpdateJobStatusRequest(JobStatus Status);
+
+public sealed record UpsertCompanyRequest(string Name, string? LogoUrl, string? Website, string? Description);
 
 public sealed record UpdateApplicationStatusRequest(ApplicationStatus Status);
 
