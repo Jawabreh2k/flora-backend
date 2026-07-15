@@ -94,6 +94,7 @@ public sealed class SubmitApplicationCommandHandler(
         await db.SaveChangesAsync(ct);
 
         await NotifyHrAsync(application, job, ct);
+        await SendCandidateConfirmationAsync(application, job, ct);
 
         return ApplicationMappings.ToDto(application);
     }
@@ -138,6 +139,41 @@ public sealed class SubmitApplicationCommandHandler(
         catch (Exception ex)
         {
             logger.LogWarning(ex, "Failed to send application alert for application {ApplicationId}", application.Id);
+        }
+    }
+
+    /// <summary>
+    /// Sends the candidate a receipt confirming their application was received. Without
+    /// this, a candidate whose browser closes right after submitting has no record they
+    /// ever applied. Best-effort, same as NotifyHrAsync — the application is already saved.
+    /// </summary>
+    private async Task SendCandidateConfirmationAsync(ApplicationEntity application, JobPostingEntity job, CancellationToken ct)
+    {
+        try
+        {
+            var hrRecipient = await recipientResolver.ResolveAsync("en", ct);
+
+            static string Enc(string? value) => System.Net.WebUtility.HtmlEncode(value ?? "—");
+
+            var html = $"""
+                <h2>Thank you for applying, {Enc(application.CandidateName)}!</h2>
+                <p>We've received your application for <strong>{Enc(job.Title)}</strong> at Flora Group.</p>
+                <p>Our HR team will review your profile and reach out if there's a match.</p>
+                <hr />
+                <p style="color:#888;font-size:12px">This is an automated confirmation — please don't reply directly to this address.</p>
+                """;
+
+            await emailSender.SendAsync(
+                new EmailMessage(
+                    application.CandidateEmail,
+                    $"Application received — {job.Title} at Flora Group",
+                    html,
+                    hrRecipient),
+                ct);
+        }
+        catch (Exception ex)
+        {
+            logger.LogWarning(ex, "Failed to send candidate confirmation for application {ApplicationId}", application.Id);
         }
     }
 }
