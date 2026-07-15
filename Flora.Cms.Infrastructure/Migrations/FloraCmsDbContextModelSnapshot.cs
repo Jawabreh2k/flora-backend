@@ -331,6 +331,35 @@ namespace Flora.Cms.Infrastructure.Migrations
                     b.ToTable("JobPostings", (string)null);
                 });
 
+            modelBuilder.Entity("Flora.Cms.Domain.Entities.NewsletterSubscription", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTimeOffset>("CreatedAtUtc")
+                        .HasColumnType("datetimeoffset");
+
+                    b.Property<string>("Email")
+                        .IsRequired()
+                        .HasMaxLength(256)
+                        .HasColumnType("nvarchar(256)");
+
+                    b.Property<string>("Locale")
+                        .IsRequired()
+                        .HasMaxLength(8)
+                        .HasColumnType("nvarchar(8)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("CreatedAtUtc");
+
+                    b.HasIndex("Email")
+                        .IsUnique();
+
+                    b.ToTable("NewsletterSubscriptions", (string)null);
+                });
+
             modelBuilder.Entity("Flora.Cms.Domain.Entities.UiConfigRevision", b =>
                 {
                     b.Property<int>("Id")

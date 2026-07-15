@@ -55,6 +55,13 @@ builder.Services.AddRateLimiter(o =>
         opts.QueueProcessingOrder = QueueProcessingOrder.OldestFirst;
         opts.QueueLimit = 0;
     });
+    o.AddFixedWindowLimiter("newsletter", opts =>
+    {
+        opts.PermitLimit = 5;
+        opts.Window = TimeSpan.FromMinutes(1);
+        opts.QueueProcessingOrder = QueueProcessingOrder.OldestFirst;
+        opts.QueueLimit = 0;
+    });
 });
 
 // ---------------------------------------------------------------------------

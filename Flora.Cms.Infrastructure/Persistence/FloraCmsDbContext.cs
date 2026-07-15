@@ -21,6 +21,7 @@ public class FloraCmsDbContext(DbContextOptions<FloraCmsDbContext> options)
     public DbSet<ApplicationEntity> Applications => Set<ApplicationEntity>();
     public DbSet<ContactInquiry> ContactInquiries => Set<ContactInquiry>();
     public DbSet<EmailSettings> EmailSettings => Set<EmailSettings>();
+    public DbSet<NewsletterSubscription> NewsletterSubscriptions => Set<NewsletterSubscription>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {

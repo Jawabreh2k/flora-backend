@@ -21,6 +21,7 @@ public interface IAppDbContext
     DbSet<ApplicationEntity> Applications { get; }
     DbSet<ContactInquiry> ContactInquiries { get; }
     DbSet<EmailSettings> EmailSettings { get; }
+    DbSet<NewsletterSubscription> NewsletterSubscriptions { get; }
 
     Task<int> SaveChangesAsync(CancellationToken ct = default);
 }

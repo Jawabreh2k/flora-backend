@@ -43,6 +43,9 @@ public sealed record UpdateEmailSettingsRequest(
 
 public sealed record SendTestEmailRequest(string To = "");
 
+/// <summary>Public newsletter signup from the site footer.</summary>
+public sealed record SubscribeNewsletterRequest(string Email = "", string? Locale = null);
+
 /// <summary>
 /// Multipart form fields for a candidate application, including the resume file.
 /// Kept as a single [FromForm] type — mixing a complex [FromForm] parameter with a
