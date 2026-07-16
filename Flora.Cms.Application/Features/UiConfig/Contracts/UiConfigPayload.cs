@@ -13,6 +13,14 @@ namespace Flora.Cms.Application.Features.UiConfig.Contracts;
 public class UiConfigPayload
 {
     public ThemeDto Theme { get; set; } = new();
+
+    /// <summary>
+    /// Independently editable dark-mode palette. Same shape as <see cref="Theme"/> —
+    /// the public site applies it scoped under its `.dark` class, the Admin Portal
+    /// edits it via the same Appearance editor with a light/dark switch.
+    /// </summary>
+    public ThemeDto ThemeDark { get; set; } = ThemeDto.CreateDefaultDark();
+
     public BrandingDto Branding { get; set; } = new();
 
     /// <summary>Per-section visibility toggles for the public homepage.</summary>
@@ -38,6 +46,7 @@ public class UiConfigPayload
     /// <summary>Builds the seeded default payload, including baseline copy + image paths.</summary>
     public static UiConfigPayload CreateDefault() => new()
     {
+        ThemeDark = ThemeDto.CreateDefaultDark(),
         Content = JsonDocument.Parse(DefaultContent.Json).RootElement.Clone(),
         Subsidiaries = SubsidiariesConfigDto.CreateDefaults(),
         Social = SocialDto.CreateDefault(),
@@ -116,6 +125,41 @@ public class ThemeDto
     public string Radius { get; set; } = "0.625rem";
     public string FontHeading { get; set; } = "Playfair Display";
     public string FontSans { get; set; } = "Inter";
+
+    /// <summary>
+    /// Seeded dark-mode palette — reweights the brand's two colours rather than
+    /// inverting to grey: maroon becomes the deep surface colour, gold becomes
+    /// the primary interactive accent. Shape/typography intentionally mirror
+    /// the light defaults (the public site only applies the colour tokens from
+    /// this variant, never radius/fonts, since shape doesn't change with theme).
+    /// </summary>
+    public static ThemeDto CreateDefaultDark() => new()
+    {
+        Background = "#16090a",
+        Foreground = "#f2eae1",
+        Card = "#231212",
+        CardForeground = "#f2eae1",
+        Primary = "#e2b577",
+        PrimaryForeground = "#22080a",
+        Secondary = "#2e1a1b",
+        SecondaryForeground = "#ede3d6",
+        Muted = "#281616",
+        MutedForeground = "#a28d82",
+        Accent = "#e2b577",
+        AccentForeground = "#22080a",
+        Border = "#3a2525",
+        Input = "#3a2525",
+        Ring = "#e2b577",
+        Destructive = "#f14442",
+        Gold = "#e2b577",
+        GoldSoft = "#4b3216",
+        GoldForeground = "#22080a",
+        Maroon = "#500516",
+        MaroonDeep = "#190002",
+        Radius = "0.625rem",
+        FontHeading = "Playfair Display",
+        FontSans = "Inter",
+    };
 }
 
 /// <summary>
@@ -184,6 +228,19 @@ public class ManagedSubsidiaryDto
     /// </summary>
     public bool Enabled { get; set; } = true;
 
+    /// <summary>
+    /// Optional list of named clients/partners shown as a "Trusted By" wordmark
+    /// strip on the subsidiary's profile page. Null/empty hides the section.
+    /// </summary>
+    public LocalizedArrayDto<string>? Clients { get; set; }
+
+    /// <summary>
+    /// Optional override for the "Visit Website" button label (e.g. "Shop the
+    /// Online Store" for a subsidiary with a live storefront). Falls back to the
+    /// public site's default translation when null/empty.
+    /// </summary>
+    public LocalizedStringDto? WebsiteLabel { get; set; }
+
     /// <summary>Returns all 6 default subsidiaries from hardcoded data.</summary>
     public static List<ManagedSubsidiaryDto> GetDefaults()
     {
@@ -251,7 +308,7 @@ public class ManagedSubsidiaryDto
                         new() { Value = "الأولى", Label = "علامة محلية محبوبة" },
                     },
                 },
-                Website = "https://www.floraonline.net",
+                Website = "https://floratradingcenter.net",
                 HasProfile = false,
                 Contact = new()
                 {
@@ -281,12 +338,14 @@ public class ManagedSubsidiaryDto
                         "Flora Technology Co. was established as a branch of the Flora Group with a clear focus: to deliver state-of-the-art, end-to-end technology solutions and services to Qatari governmental and private entities.",
                         "Over the years we have developed the expertise to provide highly customised advanced technology solutions — a full lifecycle of services from initial requirements gathering and systems analysis through implementation, installation, programming and custom software development, all the way to end-user training, maintenance and support.",
                         "As a Flora Group company we remain strictly committed to the Group's values — placing customer satisfaction at the centre of everything and striving for the highest quality in every product and service. Our experienced professionals drive innovation with the discipline of the Group's high professional and ethical standards.",
+                        "Recent engagements include delivering the technology infrastructure behind the opening of Leabaib Health Center and engineering the systems for the Government Service Complex in Messamir — real public-sector deployments supporting Qatar's expanding institutional footprint.",
                     },
                     Ar = new()
                     {
                         "تأسّست شركة فلورا للتكنولوجيا كفرعٍ من مجموعة فلورا بهدفٍ واضح: تقديم حلولٍ وخدماتٍ تقنية متكاملة وحديثة للجهات الحكومية والخاصة في قطر.",
                         "على مرّ السنين طوّرنا الخبرة لتقديم حلولٍ تقنية متقدّمة ومُخصّصة — دورة خدماتٍ كاملة من جمع المتطلبات وتحليل الأنظمة، مروراً بالتنفيذ والتركيب والبرمجة وتطوير البرمجيات المُخصّصة، وصولاً إلى تدريب المستخدمين والصيانة والدعم.",
                         "بصفتنا إحدى شركات مجموعة فلورا، نلتزم التزاماً صارماً بقيم المجموعة — واضعين رضا العميل في صميم كلّ ما نقوم به، وساعين لأعلى جودةٍ في كلّ منتجٍ وخدمة. ويقود خبراؤنا الابتكار بانضباط معايير المجموعة المهنية والأخلاقية العالية.",
+                        "من أبرز المشاريع الحديثة تجهيز البنية التقنية لافتتاح مركز اللبيب الصحي، وهندسة أنظمة مجمّع الخدمات الحكومي في مسيمير — نشرٌ فعليٌّ يدعم التوسّع المتنامي للقطاع المؤسسي في قطر.",
                     },
                 },
                 Highlights = new()
@@ -321,7 +380,7 @@ public class ManagedSubsidiaryDto
                         new() { Value = "٢٤/٧", Label = "الدعم والصيانة" },
                     },
                 },
-                Website = "https://www.floraonline.net",
+                Website = "https://www.floratechnology.net",
                 HasProfile = true,
                 Contact = new()
                 {
@@ -393,7 +452,7 @@ public class ManagedSubsidiaryDto
                         new() { Value = "°٣٦٠", Label = "تغطية الحماية" },
                     },
                 },
-                Website = "https://www.floraonline.net",
+                Website = "https://www.florasecurity.net",
                 HasProfile = true,
                 Contact = new()
                 {
@@ -463,7 +522,7 @@ public class ManagedSubsidiaryDto
                         new() { Value = "طازج", Label = "إمداد يومي" },
                     },
                 },
-                Website = "https://www.floraonline.net",
+                Website = "https://www.sibonneqatar.net",
                 HasProfile = false,
                 Contact = new()
                 {
@@ -471,6 +530,27 @@ public class ManagedSubsidiaryDto
                     Phone = "(+974) 44607703",
                     Fax = "(+974) 44504480",
                     Email = "flora@qatar.net.qa",
+                },
+                Clients = new()
+                {
+                    En = new()
+                    {
+                        "The St. Regis Doha",
+                        "The Ritz-Carlton, Doha",
+                        "Commercial Bank",
+                        "Bateel",
+                        "Holiday Villa",
+                        "The Diplomatic Club",
+                    },
+                    Ar = new()
+                    {
+                        "The St. Regis Doha",
+                        "The Ritz-Carlton, Doha",
+                        "Commercial Bank",
+                        "Bateel",
+                        "Holiday Villa",
+                        "The Diplomatic Club",
+                    },
                 },
             },
             new()
@@ -533,7 +613,7 @@ public class ManagedSubsidiaryDto
                         new() { Value = "★٥", Label = "ولاء العملاء" },
                     },
                 },
-                Website = "https://www.floraonline.net",
+                Website = "https://www.flora.qa",
                 HasProfile = false,
                 Contact = new()
                 {
@@ -542,6 +622,7 @@ public class ManagedSubsidiaryDto
                     Fax = "(+974) 44504480",
                     Email = "flora@qatar.net.qa",
                 },
+                WebsiteLabel = new() { En = "Shop the Online Store", Ar = "تسوّق من المتجر الإلكتروني" },
             },
             new()
             {
@@ -562,13 +643,13 @@ public class ManagedSubsidiaryDto
                 {
                     En = new()
                     {
-                        "Royal Stone Trading and Contracting is a well-established company formed in early 2014, with strong domain expertise and professional experience. It is focused on excelling as a leading general contracting and construction-materials supply company in the State of Qatar.",
+                        "Royal Stone Trading and Contracting is a well-established company formed in early 2014, with strong domain expertise and professional experience. Today it operates across four specialised divisions — General Contracting, Trading, MEP and Steel & Aluminium — focused on excelling as a leading construction partner in the State of Qatar.",
                         "What sets Royal Stone apart is its partnership with Flora Group — one of Qatar's leading and most reputed organisations, with a strong presence in the country built over decades.",
                         "As a subsidiary of Flora Group, Royal Stone integrates the Group's decades of experience, market relationships, facilities, standards, professionalism and reputation with a construction team carrying more than a decade of domain expertise — delivering projects on time, to quality, and to the highest levels of client satisfaction.",
                     },
                     Ar = new()
                     {
-                        "رويال ستون للتجارة والمقاولات شركةٌ راسخة تأسّست مطلع عام ٢٠١٤، تتمتّع بخبرةٍ متخصّصة عميقة. وتركّز على التميّز كشركةٍ رائدة في المقاولات العامة وتوريد مواد البناء في دولة قطر.",
+                        "رويال ستون للتجارة والمقاولات شركةٌ راسخة تأسّست مطلع عام ٢٠١٤، تتمتّع بخبرةٍ متخصّصة عميقة. وتعمل اليوم عبر أربعة أقسامٍ متخصّصة — المقاولات العامة، والتجارة، والأنظمة الكهروميكانيكية، والحديد والألمنيوم — سعياً للتميّز كشريكٍ رائدٍ في قطاع الإنشاءات بدولة قطر.",
                         "ما يميّز رويال ستون هو شراكتها مع مجموعة فلورا — إحدى أعرق المؤسسات القطرية وأكثرها سمعةً، بحضورٍ قويّ في البلاد بُني على مدى عقود.",
                         "بصفتها شركةً تابعة لمجموعة فلورا، تدمج رويال ستون عقوداً من خبرة المجموعة وعلاقاتها السوقية ومنشآتها ومعاييرها واحترافيتها وسمعتها مع فريق بناءٍ يحمل أكثر من عقدٍ من الخبرة المتخصّصة — لتسليم المشاريع في موعدها وبالجودة المطلوبة وأعلى مستويات رضا العملاء.",
                     },
@@ -577,17 +658,17 @@ public class ManagedSubsidiaryDto
                 {
                     En = new()
                     {
-                        new() { Title = "General Contracting", Body = "End-to-end civil construction and general contracting across the State of Qatar." },
-                        new() { Title = "Material Supply", Body = "Reliable sourcing and supply of quality construction materials at scale." },
-                        new() { Title = "Group Backing", Body = "The credibility, standards and market relationships of the wider Flora Group." },
-                        new() { Title = "On-Time Delivery", Body = "Projects executed to schedule, to quality and to client satisfaction." },
+                        new() { Title = "General Contracting", Body = "Turnkey civil construction — buildings, roads and infrastructure finishing works for commercial, industrial and institutional clients." },
+                        new() { Title = "Trading Division", Body = "Supply of building materials, finishing items and infrastructure products from trusted regional and international manufacturers." },
+                        new() { Title = "MEP Systems", Body = "Mechanical, electrical and plumbing works delivered end-to-end alongside the main contracting scope." },
+                        new() { Title = "Steel & Aluminium", Body = "Fabrication and installation of structural steel and aluminium works for façades, structures and finishing." },
                     },
                     Ar = new()
                     {
-                        new() { Title = "المقاولات العامة", Body = "إنشاءاتٌ مدنية ومقاولاتٌ عامة متكاملة في أنحاء دولة قطر." },
-                        new() { Title = "توريد المواد", Body = "توريدٌ موثوق لمواد البناء عالية الجودة على نطاقٍ واسع." },
-                        new() { Title = "دعم المجموعة", Body = "مصداقية ومعايير وعلاقات مجموعة فلورا الأوسع." },
-                        new() { Title = "تسليمٌ في الموعد", Body = "مشاريع تُنفَّذ وفق الجدول وبالجودة المطلوبة ورضا العملاء." },
+                        new() { Title = "المقاولات العامة", Body = "مقاولات إنشاءات مدنية متكاملة — تسليم مفتاح — تشمل المباني والطرق والبنية التحتية وأعمال التشطيبات للقطاعات التجارية والصناعية والمؤسسية." },
+                        new() { Title = "قسم التجارة", Body = "توريد مواد البناء ومستلزمات التشطيبات ومنتجات البنية التحتية من مصنّعين إقليميين ودوليين موثوقين." },
+                        new() { Title = "الأنظمة الكهروميكانيكية", Body = "أعمال ميكانيكية وكهربائية وصحية متكاملة تُنفَّذ إلى جانب نطاق المقاولات الرئيسي." },
+                        new() { Title = "الحديد والألمنيوم", Body = "تصنيع وتركيب أعمال الحديد الإنشائي والألمنيوم للواجهات والهياكل والتشطيبات." },
                     },
                 },
                 Metrics = new()
@@ -605,7 +686,7 @@ public class ManagedSubsidiaryDto
                         new() { Value = "في الموعد", Label = "تسليم المشاريع" },
                     },
                 },
-                Website = "https://www.floragroup.net",
+                Website = "https://www.royal-stone.net",
                 HasProfile = true,
                 Contact = new()
                 {
