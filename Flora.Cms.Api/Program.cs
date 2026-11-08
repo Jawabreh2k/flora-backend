@@ -15,6 +15,9 @@ using Microsoft.OpenApi.Models;
 
 var builder = WebApplication.CreateBuilder(args);
 
+// Optional, git-ignored local overrides (signing key, admin password) - works in any environment.
+builder.Configuration.AddJsonFile("appsettings.Local.json", optional: true, reloadOnChange: true);
+
 const string CorsPolicy = "FloraClients";
 
 // ---------------------------------------------------------------------------

@@ -10,3 +10,6 @@ obj/
 ## Local secrets (use dotnet user-secrets / env vars instead)
 appsettings.*.Local.json
 secrets.json
+
+# Local secrets (copy appsettings.Local.example.json)
+appsettings.Local.json
