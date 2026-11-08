@@ -1,5 +1,7 @@
 # Flora CMS — Backend API (.NET Core 9)
 
+> Personal portfolio project. Not affiliated with or endorsed by Flora Group; the brand name and imagery are used only to make the demo realistic.
+
 Step 1 of the 3-part dynamic UI ecosystem:
 
 1. **Public site** (`flora-group-website`, Next.js) — fetches theme/branding from this API and maps it to CSS variables.
@@ -69,29 +71,39 @@ API's exception-handling middleware maps to RFC-7807 problem responses (400 / 40
 > The public HTTP contract (routes, request/response shapes, status codes, ETag/304
 > caching, JSON casing, enum-as-string) is unchanged from the previous version.
 
-## Configuration
+## Run locally
 
-`appsettings.json` ships with **empty** `Jwt:SigningKey`, `Seed:AdminPassword`, and a placeholder
-connection string. Supply real values out-of-band — never commit secrets:
+**Prerequisites:** [.NET 9 SDK](https://dotnet.microsoft.com/download) and SQL Server (the default connection string uses **LocalDB**, which ships with Visual Studio; any SQL Server works if you change the connection string).
+
+**1. Create your local secrets file** (git-ignored):
 
 ```bash
 cd Flora.Cms.Api
-dotnet user-secrets init
-dotnet user-secrets set "Jwt:SigningKey" "<a-32+-char-random-secret>"
-dotnet user-secrets set "Seed:AdminPassword" "<bootstrap-admin-password>"
-dotnet user-secrets set "ConnectionStrings:Default" "Server=...;Database=FloraCms;..."
+cp appsettings.Local.example.json appsettings.Local.json     # copy ... on Windows
 ```
 
-`appsettings.Development.json` already contains dev-only values (LocalDB + a dev signing key) so the
-project runs locally with zero extra setup.
+Edit `appsettings.Local.json` and set a signing key of 32+ random characters and a bootstrap admin password:
 
-## Run
+```json
+{
+  "Jwt": { "SigningKey": "<a-32+-char-random-secret>" },
+  "Seed": { "AdminPassword": "<bootstrap-admin-password>" }
+}
+```
+
+(`dotnet user-secrets` works too. `appsettings.json` ships with these values empty and is never used for secrets.)
+
+**2. Run** (the database is created, migrated and seeded on first start):
 
 ```bash
-dotnet run --project Flora.Cms.Api      # migrations + seed apply automatically
+dotnet run --project Flora.Cms.Api --launch-profile http
 ```
 
-Then open Swagger at `https://localhost:7001/swagger`, or use `Flora.Cms.Api.http`.
+The API listens on **http://localhost:5253** and Swagger is at **/swagger**. Sign in with username `admin` and the password you set above.
+
+**Optional:** `Contact:*` settings (Resend or SMTP) enable email notifications for contact-form messages. Without them, messages are still stored and visible in the admin portal.
+
+**Run the full stack:** start this API first, then [flora-group-website](https://github.com/Jawabreh2k/flora-group-website) (port 3000) and [flora-admin-portal](https://github.com/Jawabreh2k/flora-admin-portal) (port 3001).
 
 ## Notes for Step 2 / Step 3
 
