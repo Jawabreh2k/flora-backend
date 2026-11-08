@@ -5,6 +5,7 @@
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
     <RootNamespace>Flora.Cms.Api</RootNamespace>
+    <UserSecretsId>c4ebc062-c226-4df4-88bf-fed2987e728e</UserSecretsId>
   </PropertyGroup>
 
   <ItemGroup>

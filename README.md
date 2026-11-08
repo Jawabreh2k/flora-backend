@@ -18,6 +18,22 @@ Step 1 of the 3-part dynamic UI ecosystem:
 | **Concurrency** | `rowversion` optimistic-concurrency token + monotonic `Revision` (also the ETag). |
 | **Defaults** | Seeded brand tokens mirror the real `app/globals.css` (maroon `#4A0E17`, gold `#C5A880`). |
 
+## The Flora CMS ecosystem
+
+```
+ Admin Portal (Next.js, :3001) --JWT cookie (BFF)--> .NET API (:5253) <--SQL--> SQL Server
+        |                                                 ^
+        | x-revalidate-secret                             | GET /api/ui/config, /api/jobs
+        v                                                 |
+ Public Site (Next.js, :3000) -----------------------------+
+```
+
+| Repo | Role |
+| --- | --- |
+| [flora-backend](https://github.com/Jawabreh2k/flora-backend) | .NET 9 API (this repo) |
+| [flora-group-website](https://github.com/Jawabreh2k/flora-group-website) | Public bilingual site, themed from the API |
+| [flora-admin-portal](https://github.com/Jawabreh2k/flora-admin-portal) | Admin portal: theme, jobs, companies, inquiries, subscribers |
+
 ## Architecture
 
 The backend is a **modular monolith** built with **Clean Architecture** and **CQRS**.
